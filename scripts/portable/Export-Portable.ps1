@@ -55,6 +55,7 @@ $databaseName = $databaseUri.AbsolutePath.TrimStart('/')
 $databasePort = if ($databaseUri.Port -gt 0) { $databaseUri.Port } else { 5432 }
 
 $pgDump = Get-ChildItem "C:\Program Files\PostgreSQL" -Directory -ErrorAction SilentlyContinue |
+    Where-Object { $_.Name -match '^\d+$' } |
     Sort-Object { [int]$_.Name } -Descending |
     ForEach-Object { Join-Path $_.FullName "bin\pg_dump.exe" } |
     Where-Object { Test-Path -LiteralPath $_ } |
