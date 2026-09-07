@@ -19,10 +19,11 @@ import {
 	targetKey,
 	targetOverdueStatus,
 } from "@workspace/lib/run-policy";
-import { desc, eq, inArray, type SQL, sql } from "drizzle-orm";
+import { and, desc, eq, inArray, type SQL, sql } from "drizzle-orm";
 import { Client } from "pg";
 import { z } from "zod";
 import { isAdmin, requireAuthSession } from "@/lib/auth/helpers";
+import { expeditePromptRuns } from "@/lib/expedite-prompts";
 import { sendImmediatePromptJob } from "@/lib/job-scheduler";
 
 // ============================================================================
@@ -277,6 +278,89 @@ export const updateDelayOverrideFn = createServerFn({ method: "POST" })
 			.where(eq(brands.id, data.brandId))
 			.returning();
 		if (!result[0]) throw new Error("Brand not found");
+		return result[0];
+	});
+
+// ============================================================================
+// Brand settings - Run frequency
+// ============================================================================
+
+/**
+ * Set how often a brand's prompts are sampled, in hours.
+ *
+ * Same write as `updateDelayOverrideFn`, plus an expedite: the settings screen
+ * that calls this expects the new cadence to take hold immediately, and the
+ * `prompt-${id}` singleton would otherwise hold the already-queued cycle at its
+ * old time. Null restores the deployment default.
+ */
+export const updateBrandScheduleFn = createServerFn({ method: "POST" })
+	.validator(
+		z.object({
+			brandId: z.string(),
+			delayOverrideHours: z
+				.number()
+				.int()
+				.min(1)
+				.max(24 * 365)
+				.nullable(),
+		}),
+	)
+	.handler(async ({ data }) => {
+		await requireAdmin();
+		await assertCadenceAllowed(await getBrandOrganizationId(data.brandId), data.delayOverrideHours);
+		const result = await db
+			.update(brands)
+			.set({ delayOverrideHours: data.delayOverrideHours, updatedAt: new Date() })
+			.where(eq(brands.id, data.brandId))
+			.returning();
+		if (!result[0]) throw new Error("Brand not found");
+
+		const enabledPrompts = await db
+			.select({ id: prompts.id })
+			.from(prompts)
+			.where(and(eq(prompts.brandId, data.brandId), eq(prompts.enabled, true)));
+		await expeditePromptRuns(enabledPrompts.map((row) => row.id));
+
+		return result[0];
+	});
+
+// ============================================================================
+// Admin Dashboard - Pause / Resume tracking
+// ============================================================================
+
+/**
+ * Pause or resume sampling for a brand. `brands.enabled` is what the worker
+ * already checks before scheduling and again mid-cycle, so flipping it is the
+ * whole mechanism — pausing stops new provider calls (and their cost) without
+ * touching any result already collected.
+ *
+ * Resuming expedites the queued cycle so collection restarts now rather than
+ * whenever the paused chain would next have come around.
+ */
+export const setBrandEnabledFn = createServerFn({ method: "POST" })
+	.validator(
+		z.object({
+			brandId: z.string(),
+			enabled: z.boolean(),
+		}),
+	)
+	.handler(async ({ data }) => {
+		await requireAdmin();
+		const result = await db
+			.update(brands)
+			.set({ enabled: data.enabled, updatedAt: new Date() })
+			.where(eq(brands.id, data.brandId))
+			.returning();
+		if (!result[0]) throw new Error("Brand not found");
+
+		if (data.enabled) {
+			const enabledPrompts = await db
+				.select({ id: prompts.id })
+				.from(prompts)
+				.where(and(eq(prompts.brandId, data.brandId), eq(prompts.enabled, true)));
+			await expeditePromptRuns(enabledPrompts.map((row) => row.id));
+		}
+
 		return result[0];
 	});
 

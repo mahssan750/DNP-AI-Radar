@@ -8,6 +8,7 @@ import { getOrgBillingState } from "@workspace/lib/entitlements";
 import { Skeleton } from "@workspace/ui/components/skeleton";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
+import { TrackingPausedBanner } from "@/components/tracking-paused-banner";
 import { validateBrandFilterSearch } from "@/hooks/use-list-filters";
 import { requireAuthSession, requireOrgAccess } from "@/lib/auth/helpers";
 import { getAppName } from "@/lib/route-head";
@@ -58,6 +59,15 @@ function BrandLayoutSkeleton() {
 	);
 }
 
+function BrandLayout() {
+	return (
+		<>
+			<TrackingPausedBanner />
+			<Outlet />
+		</>
+	);
+}
+
 export const Route = createFileRoute("/_authed/app/org/$org/brand/$brand")({
 	staticData: { shell: "brand" },
 	validateSearch: validateBrandFilterSearch,
@@ -100,5 +110,5 @@ export const Route = createFileRoute("/_authed/app/org/$org/brand/$brand")({
 	},
 	staleTime: 5 * 60 * 1000,
 	pendingComponent: BrandLayoutSkeleton,
-	component: () => <Outlet />,
+	component: BrandLayout,
 });

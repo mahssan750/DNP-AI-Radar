@@ -8,11 +8,13 @@ import { Label } from "@workspace/ui/components/label";
 import { TagsInput } from "@workspace/ui/components/tags-input";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@workspace/ui/components/tooltip";
 import { useCallback, useState } from "react";
+import { BrandScheduleCard } from "@/components/brand-schedule-card";
 import { SlugField } from "@/components/slug-field";
 import { useBrand } from "@/hooks/use-brands";
 import { citationKeys } from "@/hooks/use-citations";
 import { dashboardKeys } from "@/hooks/use-dashboard-summary";
 import { useOrganization, useOrganizationsChanged } from "@/hooks/use-organizations";
+import { useViewer } from "@/hooks/use-route-context";
 import { useBrandParams } from "@/hooks/use-route-params";
 import { cleanAndValidateDomain } from "@/lib/domain-categories";
 import { pageHead } from "@/lib/route-head";
@@ -33,6 +35,7 @@ function BrandSettingsPage() {
 	const brandParams = useBrandParams();
 	const navigate = useNavigate();
 	const writeError = useWriteErrorMessage();
+	const { isAdmin } = useViewer();
 	const [isSubmitting, setIsSubmitting] = useState(false);
 	const [error, setError] = useState("");
 	const [success, setSuccess] = useState("");
@@ -226,6 +229,18 @@ function BrandSettingsPage() {
 					</Button>
 				</div>
 			</form>
+
+			{isAdmin && (
+				<BrandScheduleCard
+					brand={{
+						id: brand.id,
+						name: brand.name,
+						enabled: brand.enabled,
+						delayOverrideHours: brand.delayOverrideHours,
+					}}
+					onChanged={refetchBrand}
+				/>
+			)}
 		</div>
 	);
 }
