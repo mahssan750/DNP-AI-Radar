@@ -115,6 +115,22 @@ export function getTimezoneLookbackRange(
 	}
 }
 
+/**
+ * A window of exactly N calendar days ending today, in the viewer's timezone.
+ * The statistics page picks its window with a slider rather than the fixed
+ * presets, so it needs a day count rather than a `LookbackPeriod`.
+ */
+export function getTimezoneDayRange(
+	days: number,
+	timezone: string,
+	options?: { now?: Date },
+): { fromDateStr: string; toDateStr: string } {
+	const now = options?.now ?? new Date();
+	const todayStr = now.toLocaleDateString("en-CA", { timeZone: timezone });
+	const span = Math.max(1, Math.floor(days));
+	return { fromDateStr: shiftDateStr(todayStr, { days: -(span - 1) }), toDateStr: todayStr };
+}
+
 /** `allStrategy: "1y"` keeps the bounds non-null for "all", which is what the
  * cast below rests on. */
 export function resolveLookbackRange(

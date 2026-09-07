@@ -15,6 +15,9 @@ export type BrandFilterSearch = {
 	lookback?: string;
 	tags?: string;
 	q?: string;
+	/** Statistics-page window, in days. A string like every other value here so
+	 *  the search type stays homogeneous. */
+	days?: string;
 };
 
 // The router's default search parser JSON-parses each value, so `?q=123`
@@ -32,6 +35,7 @@ export function validateBrandFilterSearch(search: Record<string, unknown>): Bran
 		lookback: asString(search.lookback),
 		tags: Array.isArray(search.tags) ? search.tags.map(String).join(",") : asString(search.tags),
 		q: asString(search.q),
+		days: asString(search.days),
 	};
 }
 

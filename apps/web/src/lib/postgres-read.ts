@@ -1233,3 +1233,185 @@ export async function getFanoutPromptTotals(
 		GROUP BY pr.prompt_id
 	`);
 }
+
+// ============================================================================
+// Statistics page
+// ============================================================================
+
+export interface StatisticsTotals {
+	total_runs: number;
+	total_prompts: number;
+	brand_mentioned_runs: number;
+	first_run: string | null;
+	last_run: string | null;
+	active_days: number;
+}
+
+export interface DailyRunCount {
+	date: string;
+	total_runs: number;
+	brand_mentioned_count: number;
+}
+
+export interface EngineRunStats {
+	model: string;
+	grounded: boolean;
+	total_runs: number;
+	brand_mentioned_count: number;
+}
+
+export interface PromptRunStats {
+	prompt_id: string;
+	total_runs: number;
+	brand_mentioned_count: number;
+	last_run: string | null;
+}
+
+export interface CitationTotals {
+	total_citations: number;
+	unique_domains: number;
+}
+
+/**
+ * Whether a run reached its model through a grounded API call rather than the
+ * scraped consumer product — the same test `modelFilter` applies, expressed as
+ * a selectable column so the breakdown can group by it.
+ */
+function groundedExpression(): SQL {
+	if (API_PROVIDER_IDS.length === 0) return sql`FALSE`;
+	const providers = sql.join(
+		API_PROVIDER_IDS.map((id) => sql`${id}`),
+		sql`, `,
+	);
+	return sql`(web_search_enabled AND provider IN (${providers}))`;
+}
+
+export async function getStatisticsTotals(
+	brandId: string,
+	fromDate: string | null,
+	toDate: string | null,
+	timezone: string,
+	enabledPromptIds?: string[],
+	model?: string,
+): Promise<StatisticsTotals> {
+	const rows = await queryPg<StatisticsTotals>(sql`
+		SELECT
+			count(*)::int AS total_runs,
+			count(DISTINCT prompt_id)::int AS total_prompts,
+			count(*) FILTER (WHERE brand_mentioned)::int AS brand_mentioned_runs,
+			to_char(min(created_at) AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS') || '.000Z' AS first_run,
+			to_char(max(created_at) AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS') || '.000Z' AS last_run,
+			count(DISTINCT (created_at AT TIME ZONE ${timezone})::date)::int AS active_days
+		FROM prompt_runs
+		WHERE brand_id = ${brandId}
+			${dateFilter(fromDate, toDate, timezone)}
+			${promptIdFilter(enabledPromptIds)}
+			${modelFilter(model)}
+	`);
+	return (
+		rows[0] ?? {
+			total_runs: 0,
+			total_prompts: 0,
+			brand_mentioned_runs: 0,
+			first_run: null,
+			last_run: null,
+			active_days: 0,
+		}
+	);
+}
+
+/** Runs ever recorded for the brand, ignoring the selected window. */
+export async function getLifetimeRunCount(brandId: string): Promise<number> {
+	const rows = await queryPg<{ total_runs: number }>(sql`
+		SELECT count(*)::int AS total_runs FROM prompt_runs WHERE brand_id = ${brandId}
+	`);
+	return rows[0]?.total_runs ?? 0;
+}
+
+export async function getDailyRunCounts(
+	brandId: string,
+	fromDate: string | null,
+	toDate: string | null,
+	timezone: string,
+	enabledPromptIds?: string[],
+	model?: string,
+): Promise<DailyRunCount[]> {
+	return queryPg<DailyRunCount>(sql`
+		SELECT
+			(created_at AT TIME ZONE ${timezone})::date AS date,
+			count(*)::int AS total_runs,
+			count(*) FILTER (WHERE brand_mentioned)::int AS brand_mentioned_count
+		FROM prompt_runs
+		WHERE brand_id = ${brandId}
+			${dateFilter(fromDate, toDate, timezone)}
+			${promptIdFilter(enabledPromptIds)}
+			${modelFilter(model)}
+		GROUP BY 1
+		ORDER BY 1
+	`);
+}
+
+export async function getEngineRunStats(
+	brandId: string,
+	fromDate: string | null,
+	toDate: string | null,
+	timezone: string,
+	enabledPromptIds?: string[],
+): Promise<EngineRunStats[]> {
+	return queryPg<EngineRunStats>(sql`
+		SELECT
+			model,
+			${groundedExpression()} AS grounded,
+			count(*)::int AS total_runs,
+			count(*) FILTER (WHERE brand_mentioned)::int AS brand_mentioned_count
+		FROM prompt_runs
+		WHERE brand_id = ${brandId}
+			${dateFilter(fromDate, toDate, timezone)}
+			${promptIdFilter(enabledPromptIds)}
+		GROUP BY 1, 2
+		ORDER BY 3 DESC
+	`);
+}
+
+export async function getPromptRunStats(
+	brandId: string,
+	fromDate: string | null,
+	toDate: string | null,
+	timezone: string,
+	enabledPromptIds?: string[],
+	model?: string,
+): Promise<PromptRunStats[]> {
+	return queryPg<PromptRunStats>(sql`
+		SELECT
+			prompt_id,
+			count(*)::int AS total_runs,
+			count(*) FILTER (WHERE brand_mentioned)::int AS brand_mentioned_count,
+			to_char(max(created_at) AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS') || '.000Z' AS last_run
+		FROM prompt_runs
+		WHERE brand_id = ${brandId}
+			${dateFilter(fromDate, toDate, timezone)}
+			${promptIdFilter(enabledPromptIds)}
+			${modelFilter(model)}
+		GROUP BY 1
+		ORDER BY 2 DESC
+	`);
+}
+
+export async function getCitationTotals(
+	brandId: string,
+	fromDate: string | null,
+	toDate: string | null,
+	timezone: string,
+	enabledPromptIds?: string[],
+): Promise<CitationTotals> {
+	const rows = await queryPg<CitationTotals>(sql`
+		SELECT
+			count(*)::int AS total_citations,
+			count(DISTINCT domain)::int AS unique_domains
+		FROM citations
+		WHERE brand_id = ${brandId}
+			${dateFilter(fromDate, toDate, timezone)}
+			${promptIdFilter(enabledPromptIds)}
+	`);
+	return rows[0] ?? { total_citations: 0, unique_domains: 0 };
+}

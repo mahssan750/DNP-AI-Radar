@@ -82,6 +82,7 @@ import { Route as AuthedAppOrgOrgBrandBrandCitationsRouteImport } from './routes
 import { Route as AuthedAppOrgOrgBrandBrandOpportunitiesRouteImport } from './routes/_authed/app/org/$org/brand/$brand/opportunities'
 import { Route as AuthedAppOrgOrgBrandBrandQueryFanOutRouteImport } from './routes/_authed/app/org/$org/brand/$brand/query-fan-out'
 import { Route as AuthedAppOrgOrgBrandBrandShareOfVoiceRouteImport } from './routes/_authed/app/org/$org/brand/$brand/share-of-voice'
+import { Route as AuthedAppOrgOrgBrandBrandStatisticsRouteImport } from './routes/_authed/app/org/$org/brand/$brand/statistics'
 import { Route as AuthedAppOrgOrgBrandBrandVisibilityRouteImport } from './routes/_authed/app/org/$org/brand/$brand/visibility'
 import { Route as AuthedAppOrgOrgBrandBrandPromptsIndexRouteImport } from './routes/_authed/app/org/$org/brand/$brand/prompts/index'
 import { Route as AuthedAppOrgOrgBrandBrandPromptsPromptIdRouteImport } from './routes/_authed/app/org/$org/brand/$brand/prompts/$promptId'
@@ -488,6 +489,12 @@ const AuthedAppOrgOrgBrandBrandShareOfVoiceRoute =
     path: '/share-of-voice',
     getParentRoute: () => AuthedAppOrgOrgBrandBrandRoute,
   } as any)
+const AuthedAppOrgOrgBrandBrandStatisticsRoute =
+  AuthedAppOrgOrgBrandBrandStatisticsRouteImport.update({
+    id: '/statistics',
+    path: '/statistics',
+    getParentRoute: () => AuthedAppOrgOrgBrandBrandRoute,
+  } as any)
 const AuthedAppOrgOrgBrandBrandVisibilityRoute =
   AuthedAppOrgOrgBrandBrandVisibilityRouteImport.update({
     id: '/visibility',
@@ -615,6 +622,7 @@ export interface FileRoutesByFullPath {
   '/app/org/$org/brand/$brand/opportunities': typeof AuthedAppOrgOrgBrandBrandOpportunitiesRoute
   '/app/org/$org/brand/$brand/query-fan-out': typeof AuthedAppOrgOrgBrandBrandQueryFanOutRoute
   '/app/org/$org/brand/$brand/share-of-voice': typeof AuthedAppOrgOrgBrandBrandShareOfVoiceRoute
+  '/app/org/$org/brand/$brand/statistics': typeof AuthedAppOrgOrgBrandBrandStatisticsRoute
   '/app/org/$org/brand/$brand/visibility': typeof AuthedAppOrgOrgBrandBrandVisibilityRoute
   '/app/org/$org/brand/$brand/': typeof AuthedAppOrgOrgBrandBrandIndexRoute
   '/app/org/$org/brand/$brand/prompts/$promptId': typeof AuthedAppOrgOrgBrandBrandPromptsPromptIdRoute
@@ -692,6 +700,7 @@ export interface FileRoutesByTo {
   '/app/org/$org/brand/$brand/opportunities': typeof AuthedAppOrgOrgBrandBrandOpportunitiesRoute
   '/app/org/$org/brand/$brand/query-fan-out': typeof AuthedAppOrgOrgBrandBrandQueryFanOutRoute
   '/app/org/$org/brand/$brand/share-of-voice': typeof AuthedAppOrgOrgBrandBrandShareOfVoiceRoute
+  '/app/org/$org/brand/$brand/statistics': typeof AuthedAppOrgOrgBrandBrandStatisticsRoute
   '/app/org/$org/brand/$brand/visibility': typeof AuthedAppOrgOrgBrandBrandVisibilityRoute
   '/app/org/$org/brand/$brand': typeof AuthedAppOrgOrgBrandBrandIndexRoute
   '/app/org/$org/brand/$brand/prompts/$promptId': typeof AuthedAppOrgOrgBrandBrandPromptsPromptIdRoute
@@ -777,6 +786,7 @@ export interface FileRoutesById {
   '/_authed/app/org/$org/brand/$brand/opportunities': typeof AuthedAppOrgOrgBrandBrandOpportunitiesRoute
   '/_authed/app/org/$org/brand/$brand/query-fan-out': typeof AuthedAppOrgOrgBrandBrandQueryFanOutRoute
   '/_authed/app/org/$org/brand/$brand/share-of-voice': typeof AuthedAppOrgOrgBrandBrandShareOfVoiceRoute
+  '/_authed/app/org/$org/brand/$brand/statistics': typeof AuthedAppOrgOrgBrandBrandStatisticsRoute
   '/_authed/app/org/$org/brand/$brand/visibility': typeof AuthedAppOrgOrgBrandBrandVisibilityRoute
   '/_authed/app/org/$org/brand/$brand/': typeof AuthedAppOrgOrgBrandBrandIndexRoute
   '/_authed/app/org/$org/brand/$brand/prompts/$promptId': typeof AuthedAppOrgOrgBrandBrandPromptsPromptIdRoute
@@ -862,6 +872,7 @@ export interface FileRouteTypes {
     | '/app/org/$org/brand/$brand/opportunities'
     | '/app/org/$org/brand/$brand/query-fan-out'
     | '/app/org/$org/brand/$brand/share-of-voice'
+    | '/app/org/$org/brand/$brand/statistics'
     | '/app/org/$org/brand/$brand/visibility'
     | '/app/org/$org/brand/$brand/'
     | '/app/org/$org/brand/$brand/prompts/$promptId'
@@ -939,6 +950,7 @@ export interface FileRouteTypes {
     | '/app/org/$org/brand/$brand/opportunities'
     | '/app/org/$org/brand/$brand/query-fan-out'
     | '/app/org/$org/brand/$brand/share-of-voice'
+    | '/app/org/$org/brand/$brand/statistics'
     | '/app/org/$org/brand/$brand/visibility'
     | '/app/org/$org/brand/$brand'
     | '/app/org/$org/brand/$brand/prompts/$promptId'
@@ -1023,6 +1035,7 @@ export interface FileRouteTypes {
     | '/_authed/app/org/$org/brand/$brand/opportunities'
     | '/_authed/app/org/$org/brand/$brand/query-fan-out'
     | '/_authed/app/org/$org/brand/$brand/share-of-voice'
+    | '/_authed/app/org/$org/brand/$brand/statistics'
     | '/_authed/app/org/$org/brand/$brand/visibility'
     | '/_authed/app/org/$org/brand/$brand/'
     | '/_authed/app/org/$org/brand/$brand/prompts/$promptId'
@@ -1585,6 +1598,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthedAppOrgOrgBrandBrandShareOfVoiceRouteImport
       parentRoute: typeof AuthedAppOrgOrgBrandBrandRoute
     }
+    '/_authed/app/org/$org/brand/$brand/statistics': {
+      id: '/_authed/app/org/$org/brand/$brand/statistics'
+      path: '/statistics'
+      fullPath: '/app/org/$org/brand/$brand/statistics'
+      preLoaderRoute: typeof AuthedAppOrgOrgBrandBrandStatisticsRouteImport
+      parentRoute: typeof AuthedAppOrgOrgBrandBrandRoute
+    }
     '/_authed/app/org/$org/brand/$brand/visibility': {
       id: '/_authed/app/org/$org/brand/$brand/visibility'
       path: '/visibility'
@@ -1695,6 +1715,7 @@ interface AuthedAppOrgOrgBrandBrandRouteChildren {
   AuthedAppOrgOrgBrandBrandOpportunitiesRoute: typeof AuthedAppOrgOrgBrandBrandOpportunitiesRoute
   AuthedAppOrgOrgBrandBrandQueryFanOutRoute: typeof AuthedAppOrgOrgBrandBrandQueryFanOutRoute
   AuthedAppOrgOrgBrandBrandShareOfVoiceRoute: typeof AuthedAppOrgOrgBrandBrandShareOfVoiceRoute
+  AuthedAppOrgOrgBrandBrandStatisticsRoute: typeof AuthedAppOrgOrgBrandBrandStatisticsRoute
   AuthedAppOrgOrgBrandBrandVisibilityRoute: typeof AuthedAppOrgOrgBrandBrandVisibilityRoute
   AuthedAppOrgOrgBrandBrandIndexRoute: typeof AuthedAppOrgOrgBrandBrandIndexRoute
   AuthedAppOrgOrgBrandBrandPromptsPromptIdRoute: typeof AuthedAppOrgOrgBrandBrandPromptsPromptIdRoute
@@ -1718,6 +1739,8 @@ const AuthedAppOrgOrgBrandBrandRouteChildren: AuthedAppOrgOrgBrandBrandRouteChil
       AuthedAppOrgOrgBrandBrandQueryFanOutRoute,
     AuthedAppOrgOrgBrandBrandShareOfVoiceRoute:
       AuthedAppOrgOrgBrandBrandShareOfVoiceRoute,
+    AuthedAppOrgOrgBrandBrandStatisticsRoute:
+      AuthedAppOrgOrgBrandBrandStatisticsRoute,
     AuthedAppOrgOrgBrandBrandVisibilityRoute:
       AuthedAppOrgOrgBrandBrandVisibilityRoute,
     AuthedAppOrgOrgBrandBrandIndexRoute: AuthedAppOrgOrgBrandBrandIndexRoute,
