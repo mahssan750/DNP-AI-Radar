@@ -15,7 +15,7 @@ export interface CsvColumn<Row> {
  * prefixed with a single quote before quoting.
  */
 function escapeCell(raw: string | number | boolean | null | undefined): string {
-	if (raw === null || raw === undefined) return "";
+	if (raw === null || raw === undefined) return '""';
 	const text = String(raw);
 	const guarded = /^[=+\-@\t\r]/.test(text) ? `'${text}` : text;
 	return `"${guarded.replace(/"/g, '""')}"`;
