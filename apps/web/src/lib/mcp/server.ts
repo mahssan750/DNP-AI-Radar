@@ -2,20 +2,22 @@
  * Stateless: a fresh server per POST, because the request that opens a session
  * and the one that uses it need not land on the same instance.
  */
+
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { WebStandardStreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js";
+import { DEFAULT_APP_NAME } from "@workspace/config/constants";
 import { ApiError } from "@/lib/api/handler";
 import type { Principal } from "@/lib/auth/api-auth";
 import { type McpTool, toolsFor } from "./tools";
 
 export const MCP_SERVER_INFO = {
-	name: "elmo",
-	title: "Elmo AI visibility",
+	name: "dnp-ai-radar",
+	title: `${DEFAULT_APP_NAME} AI visibility`,
 	version: __APP_VERSION__,
 } as const;
 
 const INSTRUCTIONS = [
-	"Elmo tracks how AI models — ChatGPT, Claude, Perplexity, Gemini, Google AI Overviews — mention and cite brands.",
+	`${DEFAULT_APP_NAME} tracks how AI models — ChatGPT, Claude, Perplexity, Gemini, Google AI Overviews — mention and cite brands.`,
 	"",
 	"Start with list_brands to find a brand id; every other brand tool takes one.",
 	"get_analytics answers 'how is this brand doing'; get_citations and get_query_fanout answer 'why', and are where an",

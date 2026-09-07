@@ -6,7 +6,7 @@ import titanOneFont from "@fontsource/titan-one/files/titan-one-latin-400-normal
 import { TanStackDevtools } from "@tanstack/react-devtools";
 import type { QueryClient } from "@tanstack/react-query";
 import { createRootRouteWithContext, HeadContent, Outlet, ScriptOnce, Scripts } from "@tanstack/react-router";
-import { DEFAULT_APP_ICON, ELMO_THEME_COLOR } from "@workspace/config/constants";
+import { DEFAULT_APP_ICON, DEFAULT_APP_NAME, ELMO_THEME_COLOR } from "@workspace/config/constants";
 import type { MissingEnvVar } from "@workspace/config/env";
 import type { DeploymentMode } from "@workspace/config/types";
 import { useEffect } from "react";
@@ -55,11 +55,11 @@ export const Route = createRootRouteWithContext<RouterContext>()({
 		}
 
 		const hasCustomIcon = Boolean(branding?.icon && branding.icon !== DEFAULT_APP_ICON);
-		const appName = branding?.name || "Elmo";
+		const appName = branding?.name || DEFAULT_APP_NAME;
 		const themeColor = hasCustomIcon ? "#000000" : ELMO_THEME_COLOR;
 		const appUrl = branding?.url ? branding.url.replace(/\/$/, "") : undefined;
 
-		const title = `${appName} - AI Search Optimization`;
+		const title = `${appName} - Internal AI Visibility Service`;
 		const description = "Track and optimize your brand's visibility across AI models.";
 		// Don't pass `title` to /api/og — the renderer already shows the brand
 		// (Elmo logo or whitelabel icon + name), so a "Brand - AI Search Optimization"

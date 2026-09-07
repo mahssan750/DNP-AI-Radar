@@ -1,11 +1,11 @@
 #!/usr/bin/env tsx
 /**
- * Generates static Elmo brand icon assets served from /icons/*.
+ * Generates the static brand icon assets served from /icons/*.
  *
  * Output directory: apps/web/public/icons/
  *
  * SVG (vector, used by modern browsers as `<link rel="icon">`):
- *   - elmo-icon.svg           Standard "e" icon (transparent background)
+ *   - elmo-icon.svg           Standard "D" icon (transparent background)
  *   - elmo-icon-maskable.svg  Maskable variant with extra padding for safe-zone
  *
  * PNG (raster, required by the PWA manifest + iOS touch icon):
@@ -53,21 +53,21 @@ function fontFaceRule(base64: string): string {
 }
 
 /**
- * Standard icon — "e" filling nearly the entire 128×128 viewBox, transparent bg.
+ * Standard icon — "D" filling nearly the entire 128×128 viewBox, transparent bg.
  *
- * Titan One's lowercase "e" x-height is ~62% of the em size.
- * At font-size 190 the glyph is ~118px tall — nearly filling the 128 box.
- * The y baseline is set so the glyph is vertically centered.
+ * Titan One's "D" is wider than it is tall (advance ~0.86em against a ~0.72em
+ * cap), so the width is what has to fit: font-size 136 draws a ~117px-wide
+ * glyph inside the 128 box, and the baseline at 88.5% centres the cap.
  */
 function buildStandardSvg(fontBase64: string): string {
 	return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
   <style>${fontFaceRule(fontBase64)}</style>
-  <text x="50%" y="93.5%" font-family="'Titan One', sans-serif" font-size="190" font-weight="400" fill="${BRAND_COLOR}" text-anchor="middle">e</text>
+  <text x="50%" y="88.5%" font-family="'Titan One', sans-serif" font-size="136" font-weight="400" fill="${BRAND_COLOR}" text-anchor="middle">D</text>
 </svg>`;
 }
 
 /**
- * Maskable icon — "e" inside the safe-zone (inner ~80%) of a 128×128 box.
+ * Maskable icon — "D" inside the safe-zone (inner ~80%) of a 128×128 box.
  * White background so adaptive icon contexts have a clean fill.
  * The glyph is sized to nearly fill the safe area.
  */
@@ -75,7 +75,7 @@ function buildMaskableSvg(fontBase64: string): string {
 	return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
   <style>${fontFaceRule(fontBase64)}</style>
   <rect width="128" height="128" fill="#ffffff"/>
-  <text x="50%" y="78%" font-family="'Titan One', sans-serif" font-size="120" font-weight="400" fill="${BRAND_COLOR}" text-anchor="middle">e</text>
+  <text x="50%" y="82%" font-family="'Titan One', sans-serif" font-size="104" font-weight="400" fill="${BRAND_COLOR}" text-anchor="middle">D</text>
 </svg>`;
 }
 
@@ -110,11 +110,11 @@ function StandardIcon({ bg, size }: { bg?: string; size: number }) {
 					fontSize: size,
 					color: BRAND_COLOR,
 					lineHeight: 1,
-					transform: "scale(1.4)",
-					marginTop: -Math.round(size * 0.28),
+					transform: "scale(1.2)",
+					marginTop: -Math.round(size * 0.22),
 				}}
 			>
-				e
+				D
 			</div>
 		</div>
 	);
@@ -126,13 +126,13 @@ function MaskableIcon({ size }: { size: number }) {
 			<div
 				style={{
 					fontFamily: "Titan One",
-					fontSize: Math.round(size * 0.94),
+					fontSize: Math.round(size * 0.82),
 					color: BRAND_COLOR,
 					lineHeight: 1,
-					marginTop: -Math.round(size * 0.18),
+					marginTop: -Math.round(size * 0.14),
 				}}
 			>
-				e
+				D
 			</div>
 		</div>
 	);
@@ -175,7 +175,7 @@ for (const { name, element, size } of pngIcons) {
 // ---------------------------------------------------------------------------
 // ICO — multi-resolution PNG-in-ICO built from Satori-rendered PNGs.
 // Kept at /icons/favicon.ico (not /favicon.ico at the root) so whitelabel
-// deployments don't end up serving Elmo's ICO for default browser requests.
+// deployments don't end up serving the stock ICO for default browser requests.
 // ---------------------------------------------------------------------------
 
 // Transparent background — browsers rasterize this onto the tab strip, which

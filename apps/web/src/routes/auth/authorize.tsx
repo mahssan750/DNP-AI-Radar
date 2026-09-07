@@ -4,11 +4,13 @@
  * consent screen, which is where they say no.
  */
 import { createFileRoute } from "@tanstack/react-router";
+import { DEFAULT_APP_NAME } from "@workspace/config/constants";
 import { authClient } from "@workspace/lib/auth/client";
 import { Alert, AlertDescription } from "@workspace/ui/components/alert";
 import { Button } from "@workspace/ui/components/button";
 import { useState } from "react";
 import FullPageCard from "@/components/full-page-card";
+import { useBranding } from "@/hooks/use-deployment-features";
 import { buildTitle, getAppName } from "@/lib/route-head";
 import { getMcpClientFn } from "@/server/mcp-clients";
 import { getViewerFn } from "@/server/viewer";
@@ -41,6 +43,7 @@ function AuthorizePage() {
 	const [error, setError] = useState<string | null>(null);
 
 	const label = client?.name?.trim() || "An MCP client";
+	const appName = useBranding()?.name ?? DEFAULT_APP_NAME;
 
 	async function respond(accept: boolean) {
 		setConnecting(true);
@@ -78,7 +81,7 @@ function AuthorizePage() {
 
 	if (!client) {
 		return (
-			<FullPageCard title="Connect to Elmo" subtitle="This client isn't registered with this instance.">
+			<FullPageCard title={`Connect to ${appName}`} subtitle="This client isn't registered with this instance.">
 				<Alert variant="destructive">
 					<AlertDescription>
 						Continuing will not work — start the connection from your MCP client again.
@@ -89,7 +92,10 @@ function AuthorizePage() {
 	}
 
 	return (
-		<FullPageCard title="Connect to Elmo" subtitle={`${label} is asking to read and manage your Elmo data.`}>
+		<FullPageCard
+			title={`Connect to ${appName}`}
+			subtitle={`${label} is asking to read and manage your ${appName} data.`}
+		>
 			<div className="w-full space-y-4">
 				{error && (
 					<Alert variant="destructive">

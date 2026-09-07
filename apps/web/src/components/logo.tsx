@@ -1,5 +1,5 @@
 import { useRouteContext } from "@tanstack/react-router";
-import { DEFAULT_APP_ICON, DEFAULT_APP_NAME } from "@workspace/config/constants";
+import { DEFAULT_APP_ICON, DEFAULT_APP_NAME, DEFAULT_APP_WORDMARK } from "@workspace/config/constants";
 import type { ClientConfig } from "@workspace/config/types";
 import { cn } from "@workspace/ui/lib/utils";
 import type { ComponentPropsWithoutRef } from "react";
@@ -24,7 +24,9 @@ export function Logo({ className, iconClassName, textClassName, ...props }: Logo
 	if (usesWordmarkFont(branding)) {
 		return (
 			<div {...props} className={cn("flex items-center gap-2", className)}>
-				<span className={cn("font-titan-one text-3xl font-normal lowercase text-blue-600", textClassName)}>elmo</span>
+				<span className={cn("font-titan-one text-3xl font-normal text-blue-600", textClassName)}>
+					{DEFAULT_APP_WORDMARK}
+				</span>
 			</div>
 		);
 	}

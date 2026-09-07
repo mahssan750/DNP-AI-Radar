@@ -1,7 +1,7 @@
 /** @jsxRuntime automatic */
 // The pragma keeps this file rendering under tsx (the brand-kit script), which
 // compiles it outside any tsconfig that sets the automatic JSX runtime.
-import { DEFAULT_APP_NAME, ELMO_BRAND_COLOR } from "@workspace/config/constants";
+import { DEFAULT_APP_NAME, DEFAULT_APP_WORDMARK, ELMO_BRAND_COLOR } from "@workspace/config/constants";
 import type { ReactNode } from "react";
 
 export const ACCENT_COLORS = ["#2563eb", "#f4d35e", "#ee964b", "#f95738"];
@@ -187,7 +187,9 @@ export function OgHeader({ appName, iconDataUri, label }: OgHeaderOptions) {
 	return (
 		<div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", height: 60 }}>
 			{isElmo ? (
-				<div style={{ fontFamily: WORDMARK, fontSize: 60, lineHeight: 1, color: ELMO_BRAND_COLOR }}>elmo</div>
+				<div style={{ fontFamily: WORDMARK, fontSize: 60, lineHeight: 1, color: ELMO_BRAND_COLOR }}>
+					{DEFAULT_APP_WORDMARK}
+				</div>
 			) : (
 				<div style={{ display: "flex", alignItems: "center" }}>
 					{iconDataUri ? (

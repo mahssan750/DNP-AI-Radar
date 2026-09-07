@@ -9,7 +9,9 @@
  * NOTE: Whitelabel mode does NOT use these defaults - all values must be
  * provided via environment variables.
  */
-export const DEFAULT_APP_NAME = "Elmo";
+export const DEFAULT_APP_NAME = "DNP-Ai-Radar";
+/** Short form for the wordmark: the full name is too long to set at display size. */
+export const DEFAULT_APP_WORDMARK = "DNP";
 export const DEFAULT_APP_ICON = "/icons/elmo-icon.svg";
 export const DEFAULT_APP_URL = "http://localhost:3000/";
 
