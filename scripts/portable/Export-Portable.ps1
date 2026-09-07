@@ -147,7 +147,7 @@ try {
     Copy-Item -LiteralPath $cryptoScript -Destination $bundleFolder
     Copy-Item -LiteralPath (Join-Path $PSScriptRoot "PORTABLE-README.txt") -Destination $bundleFolder
 
-    Write-Host "" 
+    Write-Host ""
     Write-Host "Portable copy created:" -ForegroundColor Green
     Write-Host $bundleFolder -ForegroundColor Green
     Write-Host "Copy that whole folder to the new Windows computer. Keep the transfer password separate." -ForegroundColor Yellow

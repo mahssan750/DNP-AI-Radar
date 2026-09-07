@@ -68,7 +68,7 @@ Write-Host "Building and starting DNP AI Radar. The first run can take several m
 docker compose -f portable-compose.yaml up --build -d
 if ($LASTEXITCODE -ne 0) { throw "The application could not be built or started." }
 
-Write-Host "" 
+Write-Host ""
 Write-Host "Installation complete: $InstallDirectory" -ForegroundColor Green
 Write-Host "Open http://localhost:3000 and sign in with your existing account." -ForegroundColor Green
 Start-Process "http://localhost:3000"
