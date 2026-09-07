@@ -36,6 +36,32 @@ different port cannot log you in.
 
 
 --------------------------------------------------------------------
+ MOVE THIS COPY TO ANOTHER WINDOWS COMPUTER
+--------------------------------------------------------------------
+
+The portable export includes the current accounts, brands, collected data,
+settings, API credentials, and app secrets. It encrypts all of them with a
+transfer password before writing the bundle.
+
+On this computer, open PowerShell in the project folder and run:
+
+        pnpm portable:export
+
+Choose a transfer password of at least 12 characters. The finished folder is
+written under:
+
+        portable-output
+
+Copy that whole dated folder to the new computer, install and start Docker
+Desktop there, then double-click INSTALL-DNP-AI-RADAR.cmd. Enter the transfer
+password when asked. After the first setup completes, use
+START-DNP-AI-RADAR.cmd and STOP-DNP-AI-RADAR.cmd in the installed folder.
+
+Keep the transfer password separate from the bundle. Anyone who has both can
+access the copied data and provider credentials.
+
+
+--------------------------------------------------------------------
  STILL TO DO - add your AI provider keys
 --------------------------------------------------------------------
 

@@ -32,7 +32,8 @@
     "test:api:demo": "pnpm --filter e2e test:api:demo",
     "validate:spec": "pnpm --filter e2e validate:spec",
     "test:scripts": "node --test 'scripts/*.test.mjs'",
-    "license-check": "node scripts/check-licenses.mjs"
+    "license-check": "node scripts/check-licenses.mjs",
+    "portable:export": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/portable/Export-Portable.ps1"
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.8",
