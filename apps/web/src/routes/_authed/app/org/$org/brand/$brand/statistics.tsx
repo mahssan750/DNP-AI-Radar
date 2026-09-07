@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@workspace/ui/componen
 import { Skeleton } from "@workspace/ui/components/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@workspace/ui/components/table";
 import { useMemo } from "react";
+import { CsvExportButton } from "@/components/csv-export-button";
 import { DailyRunsChart } from "@/components/statistics/daily-runs-chart";
 import { WindowSlider } from "@/components/statistics/window-slider";
 import { useBrandStatistics } from "@/hooks/use-brand-statistics";
@@ -13,7 +14,6 @@ import { useChartDownload } from "@/hooks/use-chart-download";
 import { type BrandFilterSearch, useFilterNavigate } from "@/hooks/use-list-filters";
 import { pageHead } from "@/lib/route-head";
 import { averageGapDays, clampWindowDays, DEFAULT_WINDOW_DAYS, describeWindow } from "@/lib/statistics-window";
-import { exportCsv } from "@/lib/to-csv";
 import type { BrandStatisticsResponse } from "@/server/statistics";
 
 export const Route = createFileRoute("/_authed/app/org/$org/brand/$brand/statistics")({
@@ -63,15 +63,6 @@ function SectionCard({
 			</CardHeader>
 			<CardContent className="pt-4">{children}</CardContent>
 		</Card>
-	);
-}
-
-function CsvButton({ onClick }: { onClick: () => void }) {
-	return (
-		<Button size="sm" variant="secondary" className="h-7 cursor-pointer text-xs" onClick={onClick}>
-			<IconDownload className="size-3.5 mr-1" />
-			CSV
-		</Button>
 	);
 }
 
@@ -145,14 +136,14 @@ function StatisticsContent({ stats, brandName }: { stats: BrandStatisticsRespons
 				title="Prompts run per day"
 				action={
 					<div className="flex gap-2">
-						<CsvButton
-							onClick={() =>
-								exportCsv([brandName, "runs-per-day"], stats.daily, [
-									{ header: "Date", value: (row) => row.date },
-									{ header: "Prompts run", value: (row) => row.runs },
-									{ header: "Mentioned brand", value: (row) => row.mentioned },
-								])
-							}
+						<CsvExportButton
+							rows={stats.daily}
+							fileNameParts={[brandName, "runs-per-day"]}
+							columns={[
+								{ header: "Date", value: (row) => row.date },
+								{ header: "Prompts run", value: (row) => row.runs },
+								{ header: "Mentioned brand", value: (row) => row.mentioned },
+							]}
 						/>
 						<Button
 							size="sm"
@@ -181,15 +172,15 @@ function StatisticsContent({ stats, brandName }: { stats: BrandStatisticsRespons
 			<SectionCard
 				title="By AI engine"
 				action={
-					<CsvButton
-						onClick={() =>
-							exportCsv([brandName, "by-engine"], stats.engines, [
-								{ header: "Engine", value: (row) => row.label },
-								{ header: "Prompts run", value: (row) => row.runs },
-								{ header: "Mentioned brand", value: (row) => row.mentioned },
-								{ header: "Mention rate %", value: (row) => row.mentionRate },
-							])
-						}
+					<CsvExportButton
+						rows={stats.engines}
+						fileNameParts={[brandName, "by-engine"]}
+						columns={[
+							{ header: "Engine", value: (row) => row.label },
+							{ header: "Prompts run", value: (row) => row.runs },
+							{ header: "Mentioned brand", value: (row) => row.mentioned },
+							{ header: "Mention rate %", value: (row) => row.mentionRate },
+						]}
 					/>
 				}
 			>
@@ -224,17 +215,17 @@ function StatisticsContent({ stats, brandName }: { stats: BrandStatisticsRespons
 			<SectionCard
 				title="By prompt"
 				action={
-					<CsvButton
-						onClick={() =>
-							exportCsv([brandName, "by-prompt"], stats.prompts, [
-								{ header: "Prompt", value: (row) => row.value },
-								{ header: "Status", value: (row) => (row.enabled ? "On" : "Off") },
-								{ header: "Prompts run", value: (row) => row.runs },
-								{ header: "Mentioned brand", value: (row) => row.mentioned },
-								{ header: "Mention rate %", value: (row) => row.mentionRate },
-								{ header: "Last run", value: (row) => row.lastRun ?? "" },
-							])
-						}
+					<CsvExportButton
+						rows={stats.prompts}
+						fileNameParts={[brandName, "by-prompt"]}
+						columns={[
+							{ header: "Prompt", value: (row) => row.value },
+							{ header: "Status", value: (row) => (row.enabled ? "On" : "Off") },
+							{ header: "Prompts run", value: (row) => row.runs },
+							{ header: "Mentioned brand", value: (row) => row.mentioned },
+							{ header: "Mention rate %", value: (row) => row.mentionRate },
+							{ header: "Last run", value: (row) => row.lastRun ?? "" },
+						]}
 					/>
 				}
 			>

@@ -16,9 +16,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@workspace/ui/componen
 import { Skeleton } from "@workspace/ui/components/skeleton";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@workspace/ui/components/tooltip";
 import { type ReactNode, useEffect } from "react";
+import { ChartDownloadFooter } from "@/components/chart-footer";
 import PromptWizard from "@/components/prompt-wizard";
 import { TrendChart, type TrendPoint } from "@/components/trend-chart";
 import { useBrand } from "@/hooks/use-brands";
+import { useChartDownload } from "@/hooks/use-chart-download";
 import { useDashboardSummary } from "@/hooks/use-dashboard-summary";
 import { useBrandParams } from "@/hooks/use-route-params";
 import { useShareOfVoice } from "@/hooks/use-share-of-voice";
@@ -156,6 +158,7 @@ function TrendSection({
 	value,
 	series,
 	loading,
+	exportName,
 }: {
 	icon: typeof IconEye;
 	title: string;
@@ -167,8 +170,11 @@ function TrendSection({
 	value: number | null;
 	series: TrendPoint[];
 	loading: boolean;
+	/** Stem for the exported PNG. */
+	exportName: string;
 }) {
 	const params = useBrandParams();
+	const { chartRef, isDownloading, handleDownload } = useChartDownload(exportName);
 	const heroTone = value === null ? "" : `${getVisibilityBgColor(value)} ${getVisibilityBorderColor(value)}`;
 	return (
 		<section className="space-y-2">
@@ -194,13 +200,14 @@ function TrendSection({
 					<CardHeader className="border-b border-dotted pb-2!">
 						<CardTitleWithTooltip title={chartTitle} tooltip={tooltip} />
 					</CardHeader>
-					<CardContent className="flex-1 min-h-[100px]">
+					<CardContent className="flex-1 min-h-[100px]" ref={chartRef}>
 						{loading ? (
 							<Skeleton className="h-full w-full" />
 						) : (
 							<TrendChart data={series} label={chartLabel} color="#2563eb" />
 						)}
 					</CardContent>
+					{!loading && <ChartDownloadFooter onDownload={handleDownload} isDownloading={isDownloading} />}
 				</Card>
 			</div>
 		</section>
@@ -467,6 +474,7 @@ function DashboardPage() {
 					value={lastValue(visibilityTimeSeries, "overall")}
 					series={visibilityTimeSeries.map((p) => ({ date: p.date, value: p.overall }))}
 					loading={loadingVisibility}
+					exportName={`${brand?.name ?? "brand"}-ai-visibility`}
 				/>
 
 				<TrendSection
@@ -480,6 +488,7 @@ function DashboardPage() {
 					value={lastValue(sovTimeSeries, "share")}
 					series={sovTimeSeries.map((p) => ({ date: p.date, value: p.share }))}
 					loading={loadingSov}
+					exportName={`${brand?.name ?? "brand"}-share-of-voice`}
 				/>
 
 				<section className="pt-2">

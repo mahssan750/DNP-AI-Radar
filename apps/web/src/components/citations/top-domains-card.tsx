@@ -7,6 +7,7 @@ import { useMemo, useState } from "react";
 import { UnderlineTabs } from "@/components/citations/shared";
 import { TrackDomainPopover } from "@/components/citations/track-domain-popover";
 import type { CitationData } from "@/components/citations/types";
+import { CsvExportButton } from "@/components/csv-export-button";
 import { ListPagination, usePagedList } from "@/components/list-pagination";
 import { DOMAIN_CATEGORY_COLORS, ProgressBarChart } from "@/components/progress-bar-chart";
 import { SiteIcon } from "@/components/site-icon";
@@ -62,20 +63,33 @@ export function TopDomainsCard({
 						</CardTitle>
 						<CardDescription>Which domains LLMs reference most when responding to your prompts</CardDescription>
 					</div>
-					<InputGroup className="h-8 shrink-0 sm:w-48">
-						<InputGroupInput
-							placeholder="Search domains..."
-							value={domainSearch}
-							onChange={(e) => {
-								setDomainSearch(e.target.value);
-								setPage(0);
-							}}
-							className="h-8 text-xs"
+					<div className="flex items-center gap-2 shrink-0">
+						<CsvExportButton
+							rows={filteredDomains}
+							fileNameParts={[brandName, "cited-domains"]}
+							columns={[
+								{ header: "Domain", value: (row) => row.domain },
+								{ header: "Citations", value: (row) => row.count },
+								{ header: "Category", value: (row) => row.category },
+								{ header: "Example title", value: (row) => row.exampleTitle },
+								{ header: "Change %", value: (row) => row.changePercent },
+							]}
 						/>
-						<InputGroupAddon className="pl-2.5">
-							<IconSearch className="size-3.5" />
-						</InputGroupAddon>
-					</InputGroup>
+						<InputGroup className="h-8 shrink-0 sm:w-48">
+							<InputGroupInput
+								placeholder="Search domains..."
+								value={domainSearch}
+								onChange={(e) => {
+									setDomainSearch(e.target.value);
+									setPage(0);
+								}}
+								className="h-8 text-xs"
+							/>
+							<InputGroupAddon className="pl-2.5">
+								<IconSearch className="size-3.5" />
+							</InputGroupAddon>
+						</InputGroup>
+					</div>
 				</div>
 			</CardHeader>
 			<Separator />

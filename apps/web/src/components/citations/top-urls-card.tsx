@@ -14,6 +14,7 @@ import {
 	UnderlineTabs,
 } from "@/components/citations/shared";
 import type { CitationData } from "@/components/citations/types";
+import { CsvExportButton } from "@/components/csv-export-button";
 import { ListPagination, usePagedList } from "@/components/list-pagination";
 import { SiteIcon } from "@/components/site-icon";
 import { useBrandParams } from "@/hooks/use-route-params";
@@ -98,20 +99,36 @@ export function TopUrlsCard({
 							)}
 						</CardDescription>
 					</div>
-					<InputGroup className="h-8 shrink-0 sm:w-48">
-						<InputGroupInput
-							placeholder="Search URLs..."
-							value={urlSearch}
-							onChange={(e) => {
-								setUrlSearch(e.target.value);
-								setPage(0);
-							}}
-							className="h-8 text-xs"
+					<div className="flex items-center gap-2 shrink-0">
+						<CsvExportButton
+							rows={filteredUrls}
+							fileNameParts={[brandName, "cited-urls"]}
+							columns={[
+								{ header: "URL", value: (row) => row.url },
+								{ header: "Title", value: (row) => row.title },
+								{ header: "Domain", value: (row) => row.domain },
+								{ header: "Citations", value: (row) => row.count },
+								{ header: "Category", value: (row) => row.category },
+								{ header: "Page type", value: (row) => row.pageType },
+								{ header: "Average position", value: (row) => row.avgPosition },
+								{ header: "Prompts", value: (row) => row.promptCount },
+							]}
 						/>
-						<InputGroupAddon className="pl-2.5">
-							<IconSearch className="size-3.5" />
-						</InputGroupAddon>
-					</InputGroup>
+						<InputGroup className="h-8 shrink-0 sm:w-48">
+							<InputGroupInput
+								placeholder="Search URLs..."
+								value={urlSearch}
+								onChange={(e) => {
+									setUrlSearch(e.target.value);
+									setPage(0);
+								}}
+								className="h-8 text-xs"
+							/>
+							<InputGroupAddon className="pl-2.5">
+								<IconSearch className="size-3.5" />
+							</InputGroupAddon>
+						</InputGroup>
+					</div>
 				</div>
 			</CardHeader>
 			<Separator />
