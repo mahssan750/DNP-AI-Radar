@@ -1,0 +1,297 @@
+====================================================================
+ DNP-Ai-Radar - How to run it on this Windows machine
+====================================================================
+
+This is your internal, self-hosted copy. It has two parts that run at
+the same time:
+
+  - the dashboard you look at, in a web browser
+  - a background worker that quietly asks the AI engines your questions
+    and saves the answers
+
+Both start with one command. Do steps 1 to 7 once. After that, only
+step 7 each time you want to use it.
+
+Set aside about 20 minutes for the first run.
+
+
+--------------------------------------------------------------------
+ STEP 1 - Move the project to a folder with no spaces in the name
+--------------------------------------------------------------------
+
+This matters. The tool that packages the code cannot handle a space in
+the folder path, and right now the path contains one ("ashraf siam").
+It will fail with a confusing error until you fix this.
+
+Move the whole "elmo-main" folder to somewhere simple, for example:
+
+    C:\dnp-ai-radar
+
+You can drag it in File Explorer. Every command below assumes that new
+location. If you put it somewhere else, use your own path instead.
+
+
+--------------------------------------------------------------------
+ STEP 2 - Make the "pnpm" command available
+--------------------------------------------------------------------
+
+pnpm is the tool that installs and starts everything. Node.js is already
+installed on this machine, but pnpm is not switched on yet.
+
+  1. Click Start, type "PowerShell"
+  2. Right-click "Windows PowerShell" and choose "Run as administrator"
+  3. Type this and press Enter:
+
+        corepack enable pnpm
+
+  4. Close that window.
+
+To check it worked, open a normal PowerShell window and type:
+
+        pnpm --version
+
+You should see 11.18.0 or similar. If you instead see "not recognised",
+try this in the administrator window as a fallback:
+
+        npm install -g pnpm@11.18.0
+
+
+--------------------------------------------------------------------
+ STEP 3 - Create the database
+--------------------------------------------------------------------
+
+PostgreSQL 18 is already installed on this machine. You just need an
+empty database for this app to store its results in.
+
+Open a normal PowerShell window and run:
+
+    & "C:\Program Files\PostgreSQL\18\bin\createdb.exe" -U postgres dnp_ai_radar
+
+It will ask for the password you chose when PostgreSQL was installed.
+Type it and press Enter. Nothing is printed when it works.
+
+Write that password down - you need it in the next step.
+
+
+--------------------------------------------------------------------
+ STEP 4 - Create two settings files
+--------------------------------------------------------------------
+
+The app reads its settings from a file called ".env". You need the same
+file in two places:
+
+    C:\dnp-ai-radar\.env
+    C:\dnp-ai-radar\apps\web\.env
+
+First, generate two random secret values. In PowerShell, run this twice
+and copy each result somewhere:
+
+    node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"
+
+Now create the file. Open Notepad, paste the block below, and replace
+the four CAPITAL placeholders with your own values.
+
+--- start copying below this line ---
+
+DATABASE_URL=postgres://postgres:YOUR_POSTGRES_PASSWORD@localhost:5432/dnp_ai_radar
+
+DEPLOYMENT_MODE=local
+VITE_DEPLOYMENT_MODE=local
+
+APP_URL=http://localhost:3000/
+VITE_APP_URL=http://localhost:3000/
+
+BETTER_AUTH_SECRET=FIRST_RANDOM_VALUE_FROM_ABOVE
+ELMO_ENCRYPTION_KEY=SECOND_RANDOM_VALUE_FROM_ABOVE
+
+SCRAPE_TARGETS=chatgpt:openai-api:online,claude:anthropic-api:online
+
+OPENAI_API_KEY=YOUR_OPENAI_KEY
+ANTHROPIC_API_KEY=YOUR_ANTHROPIC_KEY
+
+DISABLE_TELEMETRY=1
+
+--- stop copying above this line ---
+
+Save it twice, using "Save as" and setting "Save as type" to
+"All Files" so Notepad does not add ".txt" to the name:
+
+    C:\dnp-ai-radar\.env
+    C:\dnp-ai-radar\apps\web\.env
+
+Notes on the values:
+
+  DATABASE_URL
+      Replace YOUR_POSTGRES_PASSWORD with the password from step 3.
+      Leave the rest of the line alone.
+
+  BETTER_AUTH_SECRET and ELMO_ENCRYPTION_KEY
+      The two random values you generated. Keep them secret and do not
+      change them later - ELMO_ENCRYPTION_KEY is what protects the API
+      keys stored in the database, and changing it makes them
+      unreadable.
+
+  SCRAPE_TARGETS
+      Which AI engines to ask. The line above asks ChatGPT and Claude
+      directly through their paid APIs, which is the simplest setup.
+      You need working keys for both. To use only one, delete the other
+      entry and its comma.
+
+  OPENAI_API_KEY and ANTHROPIC_API_KEY
+      Your own paid API keys. These cost money per question asked, which
+      is exactly why the run frequency and pause controls were added.
+
+  Other AI engines (Perplexity, Gemini, Google AI Overviews) need a
+  separate scraping service and extra keys. Ask me if you want those.
+
+These .env files are deliberately excluded from GitHub, so your
+passwords and API keys are never uploaded.
+
+
+--------------------------------------------------------------------
+ STEP 5 - Install the parts the app is built from
+--------------------------------------------------------------------
+
+Open PowerShell and run:
+
+    cd C:\dnp-ai-radar
+    pnpm install
+
+This downloads a lot of files and takes a minute or two. It only needs
+doing once, and again after you pull new changes from GitHub.
+
+
+--------------------------------------------------------------------
+ STEP 6 - Create the tables inside the database
+--------------------------------------------------------------------
+
+The database from step 3 is still empty. This creates the tables:
+
+    cd C:\dnp-ai-radar\packages\lib
+    pnpm exec drizzle-kit migrate
+
+Run this once at the start, and again only after an update that says
+it changes the database.
+
+
+--------------------------------------------------------------------
+ STEP 7 - Start it
+--------------------------------------------------------------------
+
+    cd C:\dnp-ai-radar
+    pnpm dev
+
+Leave that PowerShell window open - closing it stops the app.
+
+Then open your browser at:
+
+    http://localhost:3000
+
+The first time, it asks you to create an account. This is your own
+machine, so pick any email and password you will remember. That first
+account is the administrator, which is what you need for the run
+frequency and pause controls.
+
+To stop the app, click the PowerShell window and press Ctrl + C.
+
+
+--------------------------------------------------------------------
+ WHERE THE NEW FEATURES ARE
+--------------------------------------------------------------------
+
+Run frequency, and pause / resume
+    Left sidebar -> Settings -> Brand, then scroll to the "Schedule"
+    card at the bottom of the page.
+
+    Choose how often the questions are asked: every day, every 2, 3, 5,
+    7, 14 or 30 days, or type your own number of days. "Pause tracking"
+    stops all AI calls, and their cost, straight away. Nothing already
+    collected is lost, and "Resume" picks it up again.
+
+    These two controls are only visible to an administrator account.
+
+    While a brand is paused, a yellow bar appears across the top of
+    every one of its pages, so it can never be left off by accident.
+
+Statistics
+    Left sidebar -> Statistics.
+
+    Total questions asked in the period and since the very beginning,
+    how often your brand was mentioned, how many days had activity, the
+    typical gap between runs, a bar chart per day, and tables broken
+    down by AI engine and by question.
+
+    Drag the slider at the top to change the period - anything from one
+    day to a full year. The period is stored in the browser address, so
+    you can bookmark a view or paste it to a colleague.
+
+    The "typical gap" figure is your proof that the run frequency
+    setting is working. Set it to every 3 days and, after a week or so,
+    that figure should read about 3.
+
+Exports
+    "CSV" buttons sit on every table and on the daily chart, and also on
+    Top Cited Domains and Top Cited URLs on the Citations page. They
+    download a file you can open in Excel.
+
+    "Print / Save as PDF" is at the top right of the Statistics page. In
+    the print window that opens, choose "Save as PDF" as the printer.
+
+    "PNG" and "Export (PNG)" download a picture of a chart, for pasting
+    into a slide or document.
+
+
+--------------------------------------------------------------------
+ IF SOMETHING GOES WRONG
+--------------------------------------------------------------------
+
+"pnpm is not recognised"
+    Step 2 did not take effect. Close every PowerShell window, open a
+    fresh one, and try again. If it still fails, use the npm fallback
+    at the end of step 2.
+
+"The filename, directory name, or volume label syntax is incorrect"
+    The project is still in a folder whose path contains a space. Go
+    back to step 1.
+
+"SCRAPE_TARGETS environment variable is required"
+    The .env file is missing, is in the wrong place, or was saved as
+    ".env.txt" by Notepad. Check both locations from step 4, and turn on
+    "File name extensions" in File Explorer's View menu so you can see
+    the real name.
+
+"password authentication failed for user postgres"
+    The password inside DATABASE_URL does not match your PostgreSQL
+    password. Fix it in both .env files.
+
+"relation ... does not exist"
+    Step 6 was skipped, or was run before the database existed.
+
+Port 3000 already in use
+    Something else is using it, or a previous copy is still running.
+    Close the other PowerShell window, or restart the machine.
+
+The dashboard loads but stays empty
+    That is normal at first. The background worker has to ask the AI
+    engines before there is anything to show, which takes a few minutes.
+    Check that the brand is not paused, and that its questions are
+    switched on under Settings -> Prompts.
+
+
+--------------------------------------------------------------------
+ KEEPING A HISTORY OF CHANGES
+--------------------------------------------------------------------
+
+The project is connected to your private repository:
+
+    https://github.com/mahssan750/DNP-AI-Radar
+
+To send later changes there:
+
+    cd C:\dnp-ai-radar
+    git add -A
+    git commit -m "describe what you changed"
+    git push
+
+Your .env files, passwords and API keys are excluded and never
+uploaded.
