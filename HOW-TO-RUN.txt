@@ -16,8 +16,6 @@ Both start with one command.
  EVERY DAY - just start it
 --------------------------------------------------------------------
 
-The setup below is already done on this machine. To use the app:
-
   1. Open PowerShell
   2. Type these two lines:
 
@@ -31,33 +29,62 @@ The setup below is already done on this machine. To use the app:
 To stop it, click the PowerShell window and press Ctrl + C.
 Closing the window also stops it.
 
-The first time you open the site it asks you to create an account.
-That first account is the administrator, which is what you need for
-the run frequency and pause controls.
+IMPORTANT - only ever run ONE copy at a time. The app only accepts
+sign-ins at localhost:3000. If a second copy starts, it now refuses to
+start rather than quietly moving to another port, because a copy on a
+different port cannot log you in.
 
 
 --------------------------------------------------------------------
- WHAT IS STILL LEFT TO DO
+ STILL TO DO - add your AI provider keys
 --------------------------------------------------------------------
 
-Add your AI provider keys. Until you do, the dashboard works but no
-data is collected, because the app has nothing to ask the AI engines
-with.
+Until you do this, the dashboard works and you can sign in, but no data
+is collected and "Analyze brand" fails, because the app has nothing to
+ask the AI engines with.
 
-Open these two files in Notepad:
+Get your keys here (they are shown once, at the moment you create them,
+so save them somewhere safe):
+
+    OpenAI     https://platform.openai.com/api-keys
+    Anthropic  https://console.anthropic.com/settings/keys
+
+Open BOTH of these files in Notepad:
 
     C:\Users\moham\Projects\DNP-Ai-Radar\.env
     C:\Users\moham\Projects\DNP-Ai-Radar\apps\web\.env
 
-In BOTH, replace these two placeholder lines with your real keys:
+In each, replace these two lines with your real keys:
 
     OPENAI_API_KEY=REPLACE_WITH_YOUR_OPENAI_KEY
     ANTHROPIC_API_KEY=REPLACE_WITH_YOUR_ANTHROPIC_KEY
 
-Then stop the app (Ctrl + C) and start it again.
+Save, then stop the app (Ctrl + C) and start it again.
 
 These keys cost money per question asked. That is exactly why the run
 frequency and pause controls were added - see below.
+
+
+--------------------------------------------------------------------
+ KEEP THESE FILES PRIVATE
+--------------------------------------------------------------------
+
+The two .env files hold your database password, two app secrets, and
+your API keys. Never paste their contents into a chat, an email, a
+screenshot, or a support ticket. They are excluded from GitHub on
+purpose, so they are never uploaded.
+
+If the contents are ever seen by anyone else, treat all of it as
+compromised:
+
+  - Change the PostgreSQL password (see "Changing the database
+    password" below), then run .\setup-database.ps1 again.
+  - Ask Claude to regenerate BETTER_AUTH_SECRET and ELMO_ENCRYPTION_KEY.
+    Changing BETTER_AUTH_SECRET signs everyone out; changing
+    ELMO_ENCRYPTION_KEY means any provider keys the app has stored must
+    be entered again.
+  - Delete the exposed API keys in the OpenAI and Anthropic dashboards
+    and create new ones.
 
 
 --------------------------------------------------------------------
@@ -73,7 +100,8 @@ Run frequency, and pause / resume
     stops all AI calls, and their cost, straight away. Nothing already
     collected is lost, and "Resume" picks it up again.
 
-    Only an administrator account sees these controls.
+    Only an administrator account sees these controls. The first
+    account you create is the administrator.
 
     While a brand is paused, a yellow bar appears across the top of
     every one of its pages, so it can never be left off by accident.
@@ -107,41 +135,29 @@ Exports
 
 
 --------------------------------------------------------------------
- WHAT WAS ALREADY SET UP FOR YOU
---------------------------------------------------------------------
-
-You should not need to redo any of this. It is written down in case you
-ever move the project, or set it up on another machine.
-
-  Project location
-      C:\Users\moham\Projects\DNP-Ai-Radar
-      The folder path must not contain spaces. The tool that packages
-      the code fails on them with a confusing error.
-
-  pnpm (the command that installs and starts everything)
-      Installed with:  npm install -g pnpm@11.18.0
-
-  Settings files
-      .env and apps\web\.env, both created, both holding freshly
-      generated secret values. They are excluded from GitHub, so your
-      passwords and keys are never uploaded.
-
-  Database
-      PostgreSQL 18 (port 5432), database name "dnp_ai_radar".
-      Created by setup-database.ps1, which asks for your PostgreSQL
-      password without showing or storing it.
-
-  Parts the app is built from
-      pnpm install
-
-  Database tables
-      cd packages\lib
-      pnpm exec drizzle-kit migrate
-
-
---------------------------------------------------------------------
  IF SOMETHING GOES WRONG
 --------------------------------------------------------------------
+
+"Port 3000 is already in use" and the app refuses to start
+      Another copy is already running. Find its PowerShell window and
+      press Ctrl + C. To find it if you cannot:
+
+          Get-NetTCPConnection -LocalPort 3000 -State Listen |
+            ForEach-Object { Stop-Process -Id $_.OwningProcess -Force }
+
+"Invalid origin: http://localhost:3004" in the PowerShell window
+      An older version let the app drift to a spare port when 3000 was
+      busy, which broke sign-in. It now refuses to start instead. If you
+      still see this, you are running an old copy - stop everything and
+      start again.
+
+"Brand analysis failed. Please try again."
+      Almost always the API keys are still the placeholder text. See
+      "Still to do" above. The line
+          [website-excerpt] all sources failed
+      in the PowerShell window is a separate, harmless warning - it just
+      means the website blocked the content fetch, and the analysis
+      carries on without it.
 
 "pnpm is not recognised"
       Open a fresh PowerShell window. If it still fails, run:
@@ -149,7 +165,7 @@ ever move the project, or set it up on another machine.
 
 "The filename, directory name, or volume label syntax is incorrect"
       The project has been moved to a folder whose path contains a
-      space. Move it back to a simple path.
+      space. Move it back to a path without spaces.
 
 "password authentication failed for user postgres"
       The password inside the DATABASE_URL line no longer matches.
@@ -160,19 +176,80 @@ ever move the project, or set it up on another machine.
           cd packages\lib
           pnpm exec drizzle-kit migrate
 
-Port 3000 already in use
-      A previous copy is still running. Find its PowerShell window and
-      press Ctrl + C, or restart the machine.
-
 The dashboard loads but stays empty
       Normal at first. The worker has to ask the AI engines before
-      there is anything to show. Check that you have added your API
-      keys, that the brand is not paused, and that its questions are
-      switched on under Settings -> Prompts.
+      there is anything to show. Check that your API keys are real, that
+      the brand is not paused, and that its questions are switched on
+      under Settings -> Prompts.
 
-Nothing is being collected at all
-      Check the PowerShell window for worker errors, and confirm your
-      API keys are real and have credit on them.
+
+--------------------------------------------------------------------
+ CHANGING THE DATABASE PASSWORD
+--------------------------------------------------------------------
+
+  1. Stop the app (Ctrl + C).
+  2. Run, and enter the current password when asked:
+
+        & "C:\Program Files\PostgreSQL\18\bin\psql.exe" -U postgres -h localhost -p 5432 -d postgres
+
+  3. At the prompt that appears, type (with your own new password):
+
+        ALTER USER postgres WITH PASSWORD 'your-new-password';
+        \q
+
+  4. Run .\setup-database.ps1 and give it the new password. It rewrites
+     the connection line in both .env files.
+  5. Start the app again with pnpm dev.
+
+
+--------------------------------------------------------------------
+ STARTING COMPLETELY FRESH
+--------------------------------------------------------------------
+
+This erases every account, brand and collected result. There is no
+undo. Only do it deliberately.
+
+    cd C:\Users\moham\Projects\DNP-Ai-Radar
+    # stop the app first with Ctrl + C
+    .\setup-database.ps1        # answer yes if it offers to reset
+    cd packages\lib
+    pnpm exec drizzle-kit migrate
+    cd ..\..
+    pnpm dev
+
+Then create your administrator account again at localhost:3000.
+
+
+--------------------------------------------------------------------
+ HOW THIS MACHINE WAS SET UP
+--------------------------------------------------------------------
+
+Written down in case you ever move the project or set it up elsewhere.
+
+  Project location
+      C:\Users\moham\Projects\DNP-Ai-Radar
+      The path must not contain spaces - the tool that packages the
+      code fails on them with a confusing error.
+
+  pnpm (the command that installs and starts everything)
+      npm install -g pnpm@11.18.0
+
+  Settings files
+      .env and apps\web\.env, holding generated secret values.
+      Both are excluded from GitHub.
+
+  Database
+      PostgreSQL 18 on port 5432, database name "dnp_ai_radar".
+      Created by setup-database.ps1, which asks for your PostgreSQL
+      password without showing or storing it. Note this machine also
+      runs PostgreSQL 17 on port 5433; the app does not use it.
+
+  Parts the app is built from
+      pnpm install
+
+  Database tables
+      cd packages\lib
+      pnpm exec drizzle-kit migrate
 
 
 --------------------------------------------------------------------
