@@ -3,7 +3,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { labelForModelFilter } from "@workspace/config/model-filter";
 import { db } from "@workspace/lib/db/db";
 import { prompts } from "@workspace/lib/db/schema";
-import { and, eq } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { requireBrandSession } from "@/lib/auth/helpers";
 import {
@@ -87,21 +87,16 @@ export const getBrandStatisticsFn = createServerFn({ method: "GET" })
 			.select({ id: prompts.id, value: prompts.value, enabled: prompts.enabled })
 			.from(prompts)
 			.where(eq(prompts.brandId, data.brandId));
-		const enabledPromptIds = brandPrompts.filter((p) => p.enabled).map((p) => p.id);
 
 		// Statistics count what actually ran, including prompts since disabled, so
 		// no prompt-id filter is applied to the run queries.
-		const [totals, lifetimeRuns, daily, engines, promptStats, citations, enabledCount] = await Promise.all([
+		const [totals, lifetimeRuns, daily, engines, promptStats, citations] = await Promise.all([
 			getStatisticsTotals(data.brandId, fromDateStr, toDateStr, timezone, undefined, data.model),
 			getLifetimeRunCount(data.brandId),
 			getDailyRunCounts(data.brandId, fromDateStr, toDateStr, timezone, undefined, data.model),
 			getEngineRunStats(data.brandId, fromDateStr, toDateStr, timezone),
 			getPromptRunStats(data.brandId, fromDateStr, toDateStr, timezone, undefined, data.model),
 			getCitationTotals(data.brandId, fromDateStr, toDateStr, timezone),
-			db
-				.select({ id: prompts.id })
-				.from(prompts)
-				.where(and(eq(prompts.brandId, data.brandId), eq(prompts.enabled, true))),
 		]);
 
 		const promptText = new Map(brandPrompts.map((p) => [p.id, p]));
@@ -119,7 +114,7 @@ export const getBrandStatisticsFn = createServerFn({ method: "GET" })
 			lastRun: totals.total_runs > 0 ? totals.last_run : null,
 			activeDays: totals.active_days,
 			promptsTracked: brandPrompts.length,
-			promptsEnabled: enabledCount.length,
+			promptsEnabled: brandPrompts.filter((prompt) => prompt.enabled).length,
 			totalCitations: citations.total_citations,
 			uniqueDomains: citations.unique_domains,
 			daily: daily.map((row) => ({
