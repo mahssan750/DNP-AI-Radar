@@ -5,7 +5,7 @@
 	"license": "MIT",
 	"type": "module",
 	"scripts": {
-		"dev": "vite dev --port 3000 --strictPort",
+		"dev": "vite dev --port 3000 --strictPort --host",
 		"build": "vite build && node ../../scripts/check-server-bundle.mjs .",
 		"start": "node .output/server/index.mjs",
 		"preview": "vite preview",
